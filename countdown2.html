@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Madam's Special Day </title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --glow: #7ee7ff;
+    --accent: #9b6bff;
+    --card-bg: #0f0f14;
+    --backdrop: rgba(4,4,8,0.6);
+    --teddy-yellow: #FFD66B;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:'Lato',system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;overflow-x:hidden;}
+
+  body{
+    background: #fffdfb;
+  }
+
+  /* Floating Hearts Animation */
+  .floating-hearts {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .heart {
+    position: absolute;
+    bottom: -50px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(45deg, #ff6b81, #ff99c8);
+    clip-path: polygon(
+      50% 0%, 61% 10%, 68% 25%, 50% 80%, 32% 25%, 39% 10%
+    );
+    opacity: 0.8;
+    animation: floatUp 8s linear forwards;
+  }
+
+  @keyframes floatUp {
+    0% {
+      transform: translateY(0) scale(0.6) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-100vh) scale(1.2) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  /* COUNTDOWN ONLY VIEW */
+  .countdown-only-view {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    text-align: center;
+    background: #fffdfb;
+  }
+
+  .countdown-only-view.active {
+    display: flex;
+  }
+
+  .countdown-title {
+    font-size: 3rem;
+    margin-bottom: 40px;
+    color: #5ea3a3;
+    text-shadow: 0 6px 18px rgba(94, 163, 163, 0.2);
+  }
+
+  /* center content - HIDDEN AFTER BUTTON CLICK */
+  .wrap { 
+    min-height:100vh; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    padding:28px; 
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-center { 
+    width:100%; 
+    max-width:900px; 
+    text-align:center; 
+  }
+
+  h1.title { 
+    font-size:3.9rem; 
+    margin-bottom:8px; 
+    color:#5ea3a3; 
+    text-shadow: 0 6px 18px rgba(94, 163, 163, 0.2); 
+  }
+
+  /* countdown */
+  .countdown { 
+    display:flex; 
+    gap:18px; 
+    justify-content:center; 
+    align-items:stretch; 
+  }
+  
+  .countbox { 
+    min-width:88px; 
+    padding:18px 14px; 
+    border-radius:12px; 
+    background: linear-gradient(180deg, #0f0f14, #1a1a2e);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 6px 30px rgba(0,0,0,0.3) inset;
+  }
+  
+  .num { 
+    font-size:2.25rem; 
+    font-weight:700; 
+    color: white; 
+    text-shadow: 0 6px 20px rgba(64,200,255,0.06); 
+    letter-spacing: -0.02em; 
+  }
+  
+  .lbl { 
+    display:block; 
+    margin-top:6px; 
+    font-size:0.78rem; 
+    color:#9ecff6; 
+    text-transform:uppercase; 
+    letter-spacing:0.06em; 
+  }
+
+  /* open button */
+  .open-btn {
+    display:inline-block;
+    margin-top:18px;
+    background: linear-gradient(180deg, #add2c9 0%, #5ea3a3 60%);
+    color: #020205;
+    padding:12px 26px;
+    border-radius:12px;
+    border:none;
+    font-size:2.05rem;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: 0 10px 38px rgba(94, 163, 163, 0.3);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .open-btn:hover{ 
+    transform: translateY(-4px); 
+    box-shadow: 0 16px 50px rgba(94, 163, 163, 0.4); 
+  }
+
+  /* BACKDROP + SURPRISE CARD */
+  .backdrop {
+    position: fixed; 
+    inset:0; 
+    display:none; 
+    align-items:center; 
+    justify-content:center;
+    background: var(--backdrop); 
+    z-index:1200; 
+    padding:18px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .backdrop.active { display:flex; }
+
+  .surp-card {
+    width: min(720px, 96%); 
+    background: linear-gradient(180deg,#0f1116 0%, #13141a 100%);
+    border-radius:18px; 
+    padding:22px; 
+    transform-origin:center; 
+    transform: rotate(-12deg) scale(.6);
+    opacity:0; 
+    transition: transform .55s cubic-bezier(.2,.9,.2,1), opacity .35s ease;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.04);
+    color:#f7fbff;
+    position:relative;
+    overflow:hidden;
+  }
+  .surp-card.open { transform: rotate(0deg) scale(1); opacity:1; }
+
+  .surp-card .glow {
+    position:absolute; 
+    inset:-30%; 
+    pointer-events:none;
+    background: radial-gradient(circle at 50% 20%, rgba(126,231,255,0.06), transparent 8%),
+                radial-gradient(circle at 80% 80%, rgba(155,107,255,0.04), transparent 6%);
+    mix-blend-mode: screen;
+  }
+
+  .surp-inner { 
+    display:flex; 
+    gap:18px; 
+    align-items:center; 
+    justify-content:center; 
+    flex-direction:column; 
+    padding:10px 14px; 
+  }
+  
+  .bear-svg { 
+    width:200px; 
+    height:auto; 
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.45)); 
+  }
+
+  .surp-message { 
+    text-align:center; 
+    max-width:560px; 
+  }
+  
+  .surp-message strong { 
+    display:block; 
+    font-size:1.15rem; 
+    color:#ffdfe8; 
+    margin-bottom:8px; 
+  }
+  
+  .surp-message small { 
+    display:block; 
+    color:#b0dfff; 
+  }
+
+  .card-actions { 
+    margin-top:16px; 
+    display:flex; 
+    gap:10px; 
+    justify-content:center; 
+  }
+  
+  .btn-okay { 
+    background: var(--teddy-yellow); 
+    border:none; 
+    padding:10px 16px; 
+    border-radius:10px; 
+    font-weight:700; 
+    cursor:pointer; 
+    color:#2d1a00; 
+    box-shadow: 0 10px 30px rgba(255,200,110,0.08); 
+  }
+  
+  .btn-close { 
+    position:absolute; 
+    top:12px; 
+    right:12px; 
+    background:transparent; 
+    border:1px solid rgba(255,255,255,0.04); 
+    color:#dfe; 
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    cursor:pointer; 
+  }
+
+  @media (max-width:520px){
+    .countbox{ min-width:64px; padding:14px 8px; }
+    .num{ font-size:1.6rem; }
+    .surp-card{ padding:16px; border-radius:14px; }
+    .bear-svg{ width:150px; }
+    .countdown-title { font-size: 2rem; }
+    h1.title { font-size: 2.5rem; }
+    .open-btn { font-size: 1.5rem; padding: 10px 20px; }
+  }
+
+  /* Custom Dash Loading Overlay */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1250;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  .loading-text {
+    color: #fff;
+    margin-top: 16px;
+    font-size: 1.2rem;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease;
+  }
+
+  .container {
+    display: flex;
+  }
+  .dash {
+    margin: 0 15px;
+    width: 35px;
+    height: 15px;
+    border-radius: 8px;
+    background: #020205;
+    box-shadow: 0 0 10px 0 rgba(94, 163, 163, 0.5);
+  }
+  .uno { margin-right: -18px; transform-origin: center left; animation: spin 3s linear infinite; }
+  .dos { transform-origin: center right; animation: spin2 3s linear infinite; animation-delay: .2s; }
+  .tres { transform-origin: center right; animation: spin3 3s linear infinite; animation-delay: .3s; }
+  .cuatro { transform-origin: center right; animation: spin4 3s linear infinite; animation-delay: .4s; }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(360deg); }
+    30% { transform: rotate(370deg); }
+    35% { transform: rotate(360deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes spin2 {
+    0% { transform: rotate(0deg); }
+    20% { transform: rotate(0deg); }
+    30% { transform: rotate(-180deg); }
+    35% { transform: rotate(-190deg); }
+    40% { transform: rotate(-180deg); }
+    78% { transform: rotate(-180deg); }
+    95% { transform: rotate(-360deg); }
+    98% { transform: rotate(-370deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes spin3 {
+    0% { transform: rotate(0deg); }
+    27% { transform: rotate(0deg); }
+    40% { transform: rotate(180deg); }
+    45% { transform: rotate(190deg); }
+    50% { transform: rotate(180deg); }
+    62% { transform: rotate(180deg); }
+    75% { transform: rotate(360deg); }
+    80% { transform: rotate(370deg); }
+    85% { transform: rotate(360deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes spin4 {
+    0% { transform: rotate(0deg); }
+    38% { transform: rotate(0deg); }
+    60% { transform: rotate(-360deg); }
+    65% { transform: rotate(-370deg); }
+    75% { transform: rotate(-360deg); }
+    100% { transform: rotate(-360deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating Hearts Container -->
+<div class="floating-hearts" id="floatingHearts"></div>
+
+<!-- COUNTDOWN ONLY VIEW (Hidden initially) -->
+<div class="countdown-only-view" id="countdownOnlyView">
+  <h1 class="countdown-title">Your Special Day In</h1>
+  <div class="countdown" role="timer" aria-live="polite" aria-atomic="true">
+    <div class="countbox"><div class="num" id="daysOnly">0</div><span class="lbl">Days</span></div>
+    <div class="countbox"><div class="num" id="hoursOnly">0</div><span class="lbl">Hours</span></div>
+    <div class="countbox"><div class="num" id="minutesOnly">0</div><span class="lbl">Minutes</span></div>
+    <div class="countbox"><div class="num" id="secondsOnly">0</div><span class="lbl">Seconds</span></div>
+  </div>
+</div>
+
+<!-- ORIGINAL CONTENT (Hidden after button click) -->
+<div class="wrap" id="mainContent">
+  <div class="card-center">
+    <h1 class="title">Aafreen's Special Day ✨</h1>
+
+    <button class="open-btn" id="openBtn" aria-haspopup="dialog" aria-controls="surpCard">Click Here MJ</button>
+  </div>
+</div>
+
+<!-- Loading Overlay with Dash Animation -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="container">
+    <div class="dash uno"></div>
+    <div class="dash dos"></div>
+    <div class="dash tres"></div>
+    <div class="dash cuatro"></div>
+  </div>
+  <div class="loading-text" id="loadingText">Maine Socha Tha Abhi Nhi Batuga Kuch But ✨</div>
+</div>
+
+<!-- Surprise Card (backdrop + card) -->
+<div class="backdrop" id="backdrop" aria-hidden="true">
+  <div class="surp-card" id="surpCard" role="dialog" aria-modal="true" aria-label="Surprise card">
+    <div class="glow" aria-hidden="true"></div>
+    <button class="btn-close" id="closeBtn" aria-label="Close">✕</button>
+
+    <div class="surp-inner">
+      <!-- GIF instead of SVG -->
+      <img src="https://media1.tenor.com/m/5ESBepBtZgUAAAAC/christmas-xmas.gif" class="bear-svg" alt="Cute bear animation" loading="lazy">
+
+      <div class="surp-message" id="surpMsg">
+        <strong>"Abhi nahi... thoda aur intezaar karo please 😖💖"</strong>
+        <small>The surprise will be sweet — just a little more patience 💫</small>
+
+        <div class="card-actions">
+          <button class="btn-okay" id="okayBtn"> Say Theek hai, intezaar karungi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const countdownDate = new Date("October 9, 2025 00:00:00").getTime();
+
+  // Elements
+  const mainContent = document.getElementById('mainContent');
+  const countdownOnlyView = document.getElementById('countdownOnlyView');
+  const daysOnlyEl = document.getElementById('daysOnly');
+  const hoursOnlyEl = document.getElementById('hoursOnly');
+  const minutesOnlyEl = document.getElementById('minutesOnly');
+  const secondsOnlyEl = document.getElementById('secondsOnly');
+
+  let timerInterval;
+
+  function startCountdownOnly() {
+    // Hide main content, show countdown only view
+    mainContent.style.display = 'none';
+    countdownOnlyView.classList.add('active');
+
+    function updateCountdown() {
+      const now = Date.now();
+      const distance = countdownDate - now;
+
+      if (distance <= 0) {
+        daysOnlyEl.textContent = "0";
+        hoursOnlyEl.textContent = "0";
+        minutesOnlyEl.textContent = "0";
+        secondsOnlyEl.textContent = "0";
+        clearInterval(timerInterval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      daysOnlyEl.textContent = days;
+      hoursOnlyEl.textContent = String(hours).padStart(2,'0');
+      minutesOnlyEl.textContent = String(minutes).padStart(2,'0');
+      secondsOnlyEl.textContent = String(seconds).padStart(2,'0');
+    }
+
+    updateCountdown();
+    timerInterval = setInterval(updateCountdown, 1000);
+  }
+
+  const openBtn = document.getElementById('openBtn');
+  const backdrop = document.getElementById('backdrop');
+  const surpCard = document.getElementById('surpCard');
+  const closeBtn = document.getElementById('closeBtn');
+  const okayBtn = document.getElementById('okayBtn');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+
+  // Loading messages array
+  const loadingMessages = [
+    "Maine Socha Tha Abhi Nhi Batuga Kuch But Chalo ✨",
+    "Waise Tumko Pata Hai Tum Muskurate Huye Achi lagti Ho... 💖",
+    "Infact Sirf Meri Lagti Ho... 🌟",
+    "Toh Intezar Khatam Hua, Ye raha Aapka Surprise... 🥰"
+  ];
+
+  let messageIndex = 0;
+  let textInterval;
+
+  function openSurprise(){
+    loadingOverlay.classList.add('active');
+    document.documentElement.style.overflow = 'hidden';
+    
+    // Start text rotation
+    messageIndex = 0;
+    loadingText.textContent = loadingMessages[0];
+    textInterval = setInterval(rotateLoadingText, 5000);
+
+    setTimeout(() => {
+      clearInterval(textInterval);
+      loadingOverlay.classList.remove('active');
+      backdrop.classList.add('active');
+      requestAnimationFrame(()=> {
+        surpCard.classList.add('open');
+        backdrop.setAttribute('aria-hidden','false');
+      });
+      closeBtn.focus();
+    }, 20000);
+  }
+
+  function rotateLoadingText() {
+    messageIndex = (messageIndex + 1) % loadingMessages.length;
+    loadingText.style.opacity = '0';
+    
+    setTimeout(() => {
+      loadingText.textContent = loadingMessages[messageIndex];
+      loadingText.style.opacity = '1';
+    }, 300);
+  }
+
+  function closeSurprise(){
+    surpCard.classList.remove('open');
+    backdrop.setAttribute('aria-hidden','true');
+    setTimeout(()=> {
+      backdrop.classList.remove('active');
+      document.documentElement.style.overflow = '';
+    }, 360);
+  }
+
+  openBtn.addEventListener('click', openSurprise);
+  closeBtn.addEventListener('click', closeSurprise);
+
+  // Final button click - countdown only show karega
+  okayBtn.addEventListener('click', () => {
+    closeSurprise();
+    startCountdownOnly();
+  });
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeSurprise();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && backdrop.classList.contains('active')) closeSurprise();
+  });
+
+  // Floating Hearts Animation
+  const heartsContainer = document.getElementById('floatingHearts');
+
+  function createHeart() {
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    
+    // Random position across the screen
+    heart.style.left = Math.random() * 100 + 'vw';
+    
+    // Random size
+    const size = 15 + Math.random() * 25;
+    heart.style.width = size + 'px';
+    heart.style.height = size + 'px';
+    
+    // Random animation duration
+    const duration = 6 + Math.random() * 6;
+    heart.style.animationDuration = duration + 's';
+    
+    // Random color variation
+    const hue = 330 + Math.random() * 30;
+    heart.style.background = `linear-gradient(45deg, hsl(${hue}, 100%, 70%), hsl(${hue + 20}, 100%, 80%))`;
+    
+    heartsContainer.appendChild(heart);
+    
+    // Remove heart after animation completes
+    setTimeout(() => {
+      if (heart.parentNode === heartsContainer) {
+        heartsContainer.removeChild(heart);
+      }
+    }, duration * 1000);
+  }
+
+  // Create initial hearts
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => createHeart(), i * 300);
+  }
+  
+  // Create hearts periodically
+  setInterval(createHeart, 500);
+</script>
+
+</body>
+</html>
